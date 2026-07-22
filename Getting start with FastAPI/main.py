@@ -2,13 +2,29 @@ from fastapi import FastAPI, HTTPException, status
 from datetime import datetime
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="Task API", version="1.0.0")
+app = FastAPI(
+    title="Task API", 
+    description="A simple task management API",
+    version="1.0.0"
+)
 
 # Models
 class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=100)
-    description: str | None = None
-    completed: bool = False
+    title: str = Field(
+        min_length=1, 
+        max_length=100,
+        description="The task title",
+        examples=["Buy groceries"]
+    )
+    description: str | None = Field(
+        default=None,
+        description="Optional detailed description",
+        examples=["Milk, bread, eggs"]
+    )
+    completed: bool = Field(
+        default=False,
+        description="Current status of the task"
+    )
     
 class Task(BaseModel):
     id: int
@@ -30,6 +46,13 @@ task_id_counter = 1
 # endpoints
 @app.post("/tasks", response_model=Task, status_code=status.HTTP_201_CREATED)
 def create_task(task: TaskCreate):
+    """
+    Create a new task with following properties
+    - **title**: Required, 1-100 character
+    - **description**: Optional details
+    - **completed**: Optional, status of task
+    """
+    
     global task_id_counter
     new_task = Task(
         id=task_id_counter,
