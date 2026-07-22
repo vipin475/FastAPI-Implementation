@@ -66,9 +66,20 @@ def create_task(task: TaskCreate):
     return new_task
 
 @app.get("/tasks", response_model=list[Task])
-def list_tasks():
-    return list(tasks_db.values())
+def list_tasks(
+    completed: bool | None = None,
+    search: str | None = None,
+    skip: int = 0,
+    limit: int = 10
+):
+    results = list(tasks_db.values())
     
+    if completed is not None:
+        results = [t for t in results if t.completed == completed]
+    if search:
+        results = [t for t in results if search.lower() in t.title.lower()]
+    
+    return results[skip: skip + limit]
     
 @app.get("/tasks/{task_id}", response_model=Task)
 def get_task(task_id: int):
